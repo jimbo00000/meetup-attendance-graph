@@ -5,7 +5,9 @@ meetup-attendance-graph
 
 An interactive d3.js powered graph of Meetup attendance using data from the [Meetup API](http://www.meetup.com/meetup_api/).
 
-Data is collected from the meetup API using a python script in an offline process to save bandwidth to meetup.com.
+Data is collected from the meetup API using a python script in an offline process to save bandwidth to meetup.com.  
+
+Based on [Mike Dewar's](https://github.com/mikedewar) excellent [d3talk](https://github.com/mikedewar/d3talk).  
 
 
 ### Usage

@@ -1,0 +1,283 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!--
+Based on Mike Dewar's excellent d3talk:
+https://github.com/mikedewar/d3talk
+-->
+<html>
+<head>
+<script type="text/javascript" src="d3.v2.js"></script>
+<link type="text/css" rel="stylesheet" href="style.css">
+<title></title>
+</head>
+
+<style>
+body {
+    font-family: "Helvetica Neue", Helvetica, sans-serif;
+}
+
+h1, h2 {
+    text-rendering: optimizeLegibility;
+}
+
+div.chart {
+    height: 700px;
+    width: 1200px;
+    margin-left: 20px;
+    margin-right: auto;
+    margin-top: 1em
+}
+
+div.legend {
+    position: absolute;
+    left: 100px;
+    top: 20px;
+    width: 400px;
+    height: 50;
+    padding: 8px;
+    font: 14px sans-serif;
+    background: #ddd;
+    opacity: 0.85;
+}
+
+div.modal {
+    position: absolute;
+    left: 100px;
+    top: 20px;
+    width: 250px;
+    padding: 4px;
+    font: 12px sans-serif;
+    font-weight: normal;
+    background: #ddd;
+    border: solid 1px #aaa;
+    border-radius: 8px;
+    opacity: 0.0;
+}
+</style>
+
+<body onload="makeTheGraph()">
+<div id="chart" class="chart"></div>
+<div style="margin-left: 300px;">Meetup Attendance History</div>
+<div id="legendbox" class="legend"></div>
+<div id="modal" class="modal"></div>
+
+<script>
+function loadJSON(callback) {   
+    var xobj = new XMLHttpRequest();
+        xobj.overrideMimeType("application/json");
+    xobj.open('GET', 'data/groups.json', true);
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open
+            // will NOT return a value but simply returns undefined
+            // in asynchronous mode.
+            callback(xobj.responseText);
+          }
+    };
+    xobj.send(null);  
+}
+
+var time_scale = d3.time.scale()
+     .range([30,d3.select("#chart")[0][0].clientWidth-50])
+
+var value_scale = d3.scale.linear()
+    .range([d3.select("#chart")[0][0].clientHeight-20, 20])
+
+var dates = [];
+var rsvps = [];
+var colidx = 0;
+var colormap = d3.scale.category20();
+var urlColorIndices = [];
+var c = 0;
+var scales_drawn = 0;
+
+var svg = d3.select("#chart")
+    .append("svg");
+
+function rangefunc(data)
+{
+    dateMin = new Date(d3.min(data, function(d){return d.time}));
+    dateMax = new Date(d3.max(data, function(d){return d.time}));
+    dates.push(dateMin)
+    dates.push(dateMax)
+    rsvps.push(d3.max(data, function(d){return d.yes_rsvp_count}));
+
+    var maxDate = new Date(Math.max.apply(null,dates));
+    var minDate = new Date(Math.min.apply(null,dates));
+    var maxRsvp = Math.max.apply(null,rsvps)
+
+    time_scale = time_scale.domain([minDate, maxDate])
+    value_scale = value_scale.domain([0, maxRsvp])
+}
+
+function linefunc(data)
+{
+    if (data.length == 0)
+        return;
+    if (!data[0])
+        return;
+    if (!data[0].group)
+        return;
+
+    if (scales_drawn == 0)
+    {
+        xAxis = d3.svg.axis().scale(time_scale)
+        yAxis = d3.svg.axis().scale(value_scale).orient("left")
+        h = d3.select("#chart")[0][0].clientHeight
+        svg.append("svg:g")
+            .attr("class", "xaxis")
+            .attr("transform","translate(0,"+(h-20)+")")
+            .call(xAxis);
+        svg.append("svg:g")
+            .attr("class", "yaxis")
+            .attr("transform", "translate(30,0)")
+            .call(yAxis);
+        scales_drawn = 1;
+    }
+
+    // Don't show anomalous low rsvp counts
+    data = data.filter(function(d){return d.yes_rsvp_count > 1;});
+    //console.log(data)
+    //console.log(data[0].group.urlname)
+
+    line = d3.svg.line()
+        .x(function(d){return time_scale( new Date(d.time));})
+        .y(function(d){return value_scale(d.yes_rsvp_count);})
+    svg.append("svg:path")
+        .attr("class", "line")
+        .attr("d", line(data))
+        .attr("id", data[0].group.urlname)
+        .style("stroke", colormap(urlColorIndices[data[0].group.urlname]))
+        .style("stroke-width", 2)
+        .on("mouseover", function(d) {
+            d3.select(this)
+                .style("stroke-width", 4)
+            d3.select('text#'+data[0].group.urlname)
+                .style("font-weight", "bold")
+            svg.append('text')
+                .attr("x", (d3.event.offsetX + 4) + "px")
+                .attr("y", (d3.event.offsetY - 2) + "px")
+                .text(data[0].group.urlname)
+                .attr('class','tip')
+                .style("font-size","1.5em")
+            })
+        .on("mouseout", function(d) {
+            d3.select(this)
+                .style("stroke-width", 2)
+            d3.select('text#'+data[0].group.urlname)
+                .style("font-weight", "normal")
+            d3.selectAll(".tip").remove()
+            });
+}
+
+function circlefunc(data)
+{
+    ///@todo Fix circles with multiple datasets
+    svg.selectAll("circle")
+        .data(data)
+        .enter()
+        .append("circle")
+        //.attr("class","brill")
+        .attr("cx", function(d){return time_scale( new Date(d.time) )})
+        .attr("cy", function(d){return value_scale(d.yes_rsvp_count);})
+        .attr("r", 6)
+        .style("fill", function(d){return colormap(urlColorIndices[d.group.urlname]);})
+        .style("fill-opacity", 0.8)
+        .style("stroke", "black")
+        .on('mouseover', function(d){
+            txt = "<strong>" + d.name + "<br>";
+            txt += d.yes_rsvp_count
+            if (d.rsvp_limit) { txt += "/" + d.rsvp_limit; }
+            txt += " attended<br> </strong>"
+            txt += d.description;
+
+            d3.select("#modal")
+                .style("opacity", 1.0)
+                .style("left", (d3.event.pageX + 14) + "px")
+                .style("top", (d3.event.pageY - 12) + "px")
+                .style("pointer-events", "none")
+                .html(txt)
+        })
+        .on('mouseout', function(d){
+            d3.select("#modal")
+                .style("opacity", 1e-6)
+                .style("pointer-events", "none")
+        })
+}
+
+function makeTheGraph()
+{
+    var actual_JSON = null;
+    loadJSON(function(response) {
+        actual_JSON = JSON.parse(response);
+        callD3ToAssembleGraph(actual_JSON[0].groups);
+    });
+}
+
+function callD3ToAssembleGraph(meetup_groups)
+{
+    meetup_groups.forEach(function(d) {
+        urlColorIndices[d] = c++;
+    });
+
+    function assembleDataFileName(g) { return 'data/' + 'meetup_history_' + g + '.json'; }
+
+    // Establish data ranges before plotting
+    meetup_groups.forEach(function(d) {
+        d3.json(assembleDataFileName(d), rangefunc);
+    });
+
+    // Add color key circles and named links to legend
+    meetup_groups.forEach(function(d) {
+        d3.json(assembleDataFileName(d), linefunc);
+
+        legbox = d3.select("#legendbox");
+        sp = legbox
+            .append("span");
+        sp
+            .attr("width", 30)
+            .style("height", 30)
+            .append("svg")
+            .style("width", "20px")
+            .style("height", "20px")
+            .append("circle")
+                .attr("r", 8)
+                .attr("cx", 12)
+                .attr("cy", 12)
+                .attr("fill", colormap(urlColorIndices[d]))
+
+        sp
+            .append("text")
+            .attr("id", d)
+            .text(d)
+            .style("font-weight", "normal")
+            .attr("meetup_group", d)
+            .on('click', function(d){
+                urlbase = "http://www.meetup.com/"
+                url = urlbase + d3.select(this).attr("meetup_group");
+                window.open(url, '_blank')
+            })
+            .on('mouseover', function(d){
+                d3.select(this)
+                    .style("font-weight", "bold")
+                // This double array dereference seeems wrong, but appears to work
+                gname = d3.select(this)[0][0].innerText.replace("\n", "")
+                svg.select("#" + gname)
+                    .style("stroke-width", 4)
+            })
+            .on('mouseout', function(d){
+                d3.select(this)
+                    .style("font-weight", "normal")
+                // This double array dereference seeems wrong, but appears to work
+                gname = d3.select(this)[0][0].innerText.replace("\n", "")
+                svg.select("#" + gname)
+                    .style("stroke-width", 2)
+            })
+            .append("br")
+    });
+
+    ///@todo Put circles on all datasets, not just one
+    d3.json(assembleDataFileName(meetup_groups[0]), circlefunc);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+[
+    {
+        "bostongroups": [
+            "Boston-Virtual-Reality",
+            "Boston-d3-js-User-Group",
+            "kinectboston",
+            "HPC-GPU-Supercomputing-Group-of-Boston",
+            "Boston-WebGL",
+            "B-U-G-Boston-Unity-Group",
+            "Khronos-Boston-Chapter"
+        ],
+        "groups": [
+            "Boston-Virtual-Reality",
+            "VanVirtualReality",
+            "Atlanta-Virtual-Reality-Meetup",
+            "Seattle-Virtual-Reality",
+            "Virtual-Reality-NYC",
+            "SiliconValleyVirtualReality",
+            "OC-Virtual-Reality-Meetup",
+            "London-Oculus-Rift-for-Games-Meetup",
+            "Paris-Realites-Alternatives",
+            "TorontoVR",
+            "MTLVR-MONTREAL-VIRTUAL-REALITY",
+            "Melbourne-Virtual-Reality",
+            "Virtual-Reality-DCVR",
+            "DutchVRMeetup",
+            "Houston-VR",
+            "UploadVR",
+            "Nashville-Virtual-Reality-Meetup",
+            "virtualreality",
+            "VRAustin"
+        ]
+    }
+]

@@ -48,9 +48,12 @@ for k,v in sorted(event_rsvps.iteritems()):
     jo = {}
     jo['time'] = int(millis)
     jo['yes_rsvp_count'] = v
+    jo['group'] = {}
+    jo['group']['name'] = "Monthly Totals"
+    jo['group']['urlname'] = "Monthly Totals"
     #print(jo)
     json_objects.append(jo)
 
 #print json_objects
-with open('meetup_history_total.json', 'w') as tots:
+with open('meetup_history_totals.json', 'w') as tots:
     json.dump(json_objects, tots)

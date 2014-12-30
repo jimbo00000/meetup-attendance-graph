@@ -17,7 +17,8 @@ def unix_time_millis(dt):
 
 event_rsvps = defaultdict(int)
 event_counts = defaultdict(int)
-event_descrs = defaultdict(str)
+event_descrs = defaultdict(list)
+event_strings = defaultdict(str)
 json_objects = []
 
 with open('groups.json') as group_json:
@@ -38,12 +39,20 @@ for g in group_data[0]["groups"]:
             x = datetime.date.fromtimestamp(msepoch/1000)
             monthdate = datetime.datetime(x.year, x.month, 1)
             #print(monthdate)
-            event_rsvps[monthdate] += d['yes_rsvp_count']
+            yess = d['yes_rsvp_count']
+            event_rsvps[monthdate] += yess
             event_counts[monthdate] += 1
-            descr = "<strong>" + str(d['yes_rsvp_count']) + "</strong>"
-            descr += " "
-            descr += d['group']['name'] + "<br>"
-            event_descrs[monthdate] += descr
+            tup = (yess, d['group']['name'])
+            event_descrs[monthdate].append(tup)
+
+# Sort list of tuples by attendance numbers and assemble HTML string
+for k in event_descrs:
+    event_descrs[k].sort(key=lambda tup: tup[0])
+    for y in reversed(event_descrs[k]):
+        descr = "<strong>" + str(y[0]) + "</strong>"
+        descr += " "
+        descr += y[1] + "<br>"
+        event_strings[k] += descr
 
 # Assemble into a json object
 for k,v in sorted(event_rsvps.iteritems()):
@@ -56,7 +65,7 @@ for k,v in sorted(event_rsvps.iteritems()):
     jo['time'] = int(millis)
     jo['yes_rsvp_count'] = v
     jo['name'] = k.strftime("%B %Y")
-    jo['description'] = event_descrs[k]
+    jo['description'] = event_strings[k]
     jo['group'] = {}
     jo['group']['name'] = "Monthly Totals"
     jo['group']['urlname'] = "Monthly Totals"

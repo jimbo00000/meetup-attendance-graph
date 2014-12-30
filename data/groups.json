@@ -10,6 +10,7 @@
             "Khronos-Boston-Chapter"
         ],
         "groups": [
+            "totals",
             "Boston-Virtual-Reality",
             "VanVirtualReality",
             "Atlanta-Virtual-Reality-Meetup",
@@ -29,7 +30,9 @@
             "Nashville-Virtual-Reality-Meetup",
             "virtualreality",
             "VRAustin",
-            "totals"
+            "virtualrealityla",
+            "vrphilly",
+            "Cincinnati-Dayton-Virtual-Reality"
         ]
     }
 ]

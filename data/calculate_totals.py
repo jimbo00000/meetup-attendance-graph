@@ -17,6 +17,7 @@ def unix_time_millis(dt):
 
 event_rsvps = defaultdict(int)
 event_counts = defaultdict(int)
+event_descrs = defaultdict(str)
 json_objects = []
 
 with open('groups.json') as group_json:
@@ -24,6 +25,8 @@ with open('groups.json') as group_json:
 
 # Accumulate totals by month
 for g in group_data[0]["groups"]:
+    if g == "totals":
+        continue
     mfile = "meetup_history_" + g +".json"
     #print(mfile)
 
@@ -37,6 +40,10 @@ for g in group_data[0]["groups"]:
             #print(monthdate)
             event_rsvps[monthdate] += d['yes_rsvp_count']
             event_counts[monthdate] += 1
+            descr = "<strong>" + str(d['yes_rsvp_count']) + "</strong>"
+            descr += " "
+            descr += d['group']['name'] + "<br>"
+            event_descrs[monthdate] += descr
 
 # Assemble into a json object
 for k,v in sorted(event_rsvps.iteritems()):
@@ -48,6 +55,8 @@ for k,v in sorted(event_rsvps.iteritems()):
     jo = {}
     jo['time'] = int(millis)
     jo['yes_rsvp_count'] = v
+    jo['name'] = k.strftime("%B %Y")
+    jo['description'] = event_descrs[k]
     jo['group'] = {}
     jo['group']['name'] = "Monthly Totals"
     jo['group']['urlname'] = "Monthly Totals"
@@ -55,5 +64,5 @@ for k,v in sorted(event_rsvps.iteritems()):
     json_objects.append(jo)
 
 #print json_objects
-with open('meetup_history_totals.json', 'w') as tots:
+with open('meetup_history_totals.json', 'w+') as tots:
     json.dump(json_objects, tots)

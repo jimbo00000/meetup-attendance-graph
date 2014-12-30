@@ -185,9 +185,9 @@ function circlefunc(data)
         .style("stroke", "black")
         .on('mouseover', function(d){
             txt = "<strong>" + d.name + "<br>";
-            txt += d.yes_rsvp_count
+            txt += "<u>" + d.yes_rsvp_count
             if (d.rsvp_limit) { txt += "/" + d.rsvp_limit; }
-            txt += " attended<br> </strong>"
+            txt += " attended</u><br> </strong>"
             txt += d.description;
 
             d3.select("#modal")

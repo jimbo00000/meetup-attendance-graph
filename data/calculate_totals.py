@@ -31,19 +31,22 @@ for g in group_data[0]["groups"]:
     mfile = "meetup_history_" + g +".json"
     #print(mfile)
 
-    with open(mfile) as mjson:
-        dat = json.load(mjson)
-        for d in dat:
-            msepoch = d['time']
-            #print(msepoch, d['yes_rsvp_count'])
-            x = datetime.date.fromtimestamp(msepoch/1000)
-            monthdate = datetime.datetime(x.year, x.month, 1)
-            #print(monthdate)
-            yess = d['yes_rsvp_count']
-            event_rsvps[monthdate] += yess
-            event_counts[monthdate] += 1
-            tup = (yess, d['group']['name'])
-            event_descrs[monthdate].append(tup)
+    try:
+        with open(mfile) as mjson:
+            dat = json.load(mjson)
+            for d in dat:
+                msepoch = d['time']
+                #print(msepoch, d['yes_rsvp_count'])
+                x = datetime.date.fromtimestamp(msepoch/1000)
+                monthdate = datetime.datetime(x.year, x.month, 1)
+                #print(monthdate)
+                yess = d['yes_rsvp_count']
+                event_rsvps[monthdate] += yess
+                event_counts[monthdate] += 1
+                tup = (yess, d['group']['name'])
+                event_descrs[monthdate].append(tup)
+    except IOError:
+        print("File " + mfile + " not found.")
 
 # Sort list of tuples by attendance numbers and assemble HTML string
 for k in event_descrs:

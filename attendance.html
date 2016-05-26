@@ -1,11 +1,12 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<!DOCTYPE html>
+<meta charset="utf-8">
 <!--
 Based on Mike Dewar's excellent d3talk:
 https://github.com/mikedewar/d3talk
 -->
 <html>
 <head>
-<script type="text/javascript" src="d3.v2.js"></script>
+<script charset="utf-8" type="text/javascript" src="d3.v2.js"></script>
 <link type="text/css" rel="stylesheet" href="style.css">
 <title></title>
 </head>
@@ -96,6 +97,8 @@ var svg = d3.select("#chart")
 
 function rangefunc(data)
 {
+    if (data.length == 0)
+        return;
     dateMin = new Date(d3.min(data, function(d){return d.time}));
     dateMax = new Date(d3.max(data, function(d){return d.time}));
     dates.push(dateMin)
